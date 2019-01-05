@@ -18,3 +18,5 @@ Edit the `config` key in `package.json` with your desired configuration.
 ```
 npm start
 ```
+
+![](./docs/demo.gif)
