@@ -1,0 +1,15 @@
+{
+  "name": "sparkbot",
+  "version": "0.1.0",
+  "description": "Trading bot for Sparkswap",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Sparkswap",
+  "license": "MIT",
+  "dependencies": {
+    "gdax": "^0.8.0",
+    "grpc": "^1.17.0"
+  }
+}
