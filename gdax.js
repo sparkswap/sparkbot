@@ -40,8 +40,8 @@ async function getMarketPrice(market) {
 async function getSuggestedPrice(market, margin = 0.05) {
   const { bid: marketBid, ask: marketAsk } = await getMarketPrice(market)
 
-  const suggestedBidPrice = Big(marketBid.price).times(1 - margin)
-  const suggestedAskPrice = Big(marketAsk.price).times(1 + margin)
+  const suggestedBidPrice = Big(marketBid.price).times(Big(1).minus(margin))
+  const suggestedAskPrice = Big(marketAsk.price).times(Big(1).plus(margin))
 
   return {
     bid: {

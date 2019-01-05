@@ -140,7 +140,7 @@ class BrokerClient {
       return 'CANCELLED'
     }
 
-    console.log(`Order ${id} is still active.`)
+    return this.watchOrder(id, interval)
   }
 }
 

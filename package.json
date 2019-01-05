@@ -9,7 +9,7 @@
     "markets": "BTC/LTC",
     "margin": 0.05,
     "max_order_size": "0.001",
-    "interval": 5
+    "interval": 30
   },
   "scripts": {
     "start": "node index.js",

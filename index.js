@@ -14,6 +14,7 @@ const sides = [
 
 async function setNewOrder(market, side, suggestion) {
   const { price, amount } = suggestion
+  console.log(`[${market}:${side}] Price: ${price}`.gray)
 
   console.log(`[${market}:${side}] Getting maximum order size`.gray)
   const maxOrderSize = await broker.maxOrderSize(market, side, price)
