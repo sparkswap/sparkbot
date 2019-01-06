@@ -1,6 +1,6 @@
 mkdir -p proto/google/api
 
-echo "fetching version: $npm_package_config_broker_version"
+echo "fetching version: $npm_package_config_sparkswap_version"
 
 curl "https://raw.githubusercontent.com/sparkswap/broker/$npm_package_config_broker_version/broker-daemon/proto/broker.proto" -o proto/broker.proto
 curl "https://raw.githubusercontent.com/sparkswap/broker/$npm_package_config_broker_version/broker-daemon/proto/google/api/annotations.proto" -o proto/google/api/annotations.proto

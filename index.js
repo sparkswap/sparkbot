@@ -1,8 +1,8 @@
 require('colors')
 const Big = require('big.js')
 const gdax = require('./gdax')
-const BrokerClient = require('./broker')
-const broker = new BrokerClient(process.env.npm_package_config_config_path)
+const Sparkswap = require('./sparkswap')
+const sparkswap = new Sparkswap(process.env.npm_package_config_sparkswap_config_path)
 const markets = process.env.npm_package_config_markets.split(' ')
 const margin = 0 + process.env.npm_package_config_margin
 const globalMaxOrderSize = process.env.npm_package_config_max_order_size
@@ -17,7 +17,7 @@ async function setNewOrder(market, side, suggestion) {
   console.log(`[${market}:${side}] Price: ${price}`.gray)
 
   console.log(`[${market}:${side}] Getting maximum order size`.gray)
-  const maxOrderSize = await broker.maxOrderSize(market, side, price)
+  const maxOrderSize = await sparkswap.maxOrderSize(market, side, price)
 
   let orderSize
 
@@ -37,16 +37,26 @@ async function setNewOrder(market, side, suggestion) {
     return
   }
 
-  console.log(`[${market}:${side}] Placing order`.gray)
-  const id = await broker.place(market, side, price, orderSize)
+  console.log(`[${market}:${side}] Placing order: `.gray + `${orderSize} @ ${price}`.cyan)
+  const id = await sparkswap.place(market, side, price, orderSize)
   console.log(`[${market}:${side}] Placed order: `.gray + `${id}`.green)
 
-  try {
-    const status = await broker.watchOrder(id)
+  const order = sparkswap.watchOrderFillAmounts(id)
+
+  order.on('error', (err) => {
+    console.error(`[${market}:${side}] Error while watching ${id}: ${err}`)
+    order.removeAllListeners()
+  })
+
+  order.on('done', (status) => {
     console.log(`[${market}:${side}] Order `.gray + `${id}`.green + ` ended on status: ${status}`)
-  } catch (e) {
-    console.error(`[${market}:${side}] Error while watching ${id}: ${e}`)
-  }
+    order.removeAllListeners()
+  })
+
+  order.on('fill', ({ amount, price }) => {
+    // TODO: do the other side of the order on GDAX once it gets partially filled
+    console.log(`[${market}:${side}] Order `.gray + `${id}`.green + ` filled with `.gray + `${amount} @ ${price}`.cyan)
+  })
 }
 
 console.log('Starting 🤖 sparkbot, the '.green + '⚡ Sparkswap'.white + ' Trading Bot'.green)
@@ -61,7 +71,7 @@ setInterval(() => {
     console.log(`[${market}]     Got suggested prices`.gray)
     console.log(`[${market}]     Cancelling existing orders`.gray)
 
-    await broker.cancelAll(market)
+    await sparkswap.cancelAll(market)
 
     console.log(`[${market}]     Cancelled existing orders`.gray)
 

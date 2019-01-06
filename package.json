@@ -4,8 +4,8 @@
   "description": "Trading bot for Sparkswap",
   "main": "index.js",
   "config": {
-    "broker_version": "v0.3.0-beta",
-    "config_path": "~/.sparkswap/config.js",
+    "sparkswap_version": "v0.3.0-beta",
+    "sparkswap_config_path": "~/.sparkswap/config.js",
     "markets": "BTC/LTC",
     "margin": 0.05,
     "max_order_size": "0.001",

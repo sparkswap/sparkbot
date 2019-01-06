@@ -1,3 +1,4 @@
+const EventEmitter = require('events')
 const basicAuth = require('./basic-auth')
 const grpc = require('grpc')
 const Big = require('big.js')
@@ -26,7 +27,7 @@ function expandTilde(str) {
   return path.join(...pathParts)
 }
 
-class BrokerClient {
+class SparkswapClient {
   constructor(configPath = '~/.sparkswap/config.js') {
     const config = require(expandTilde(configPath))
 
@@ -123,6 +124,46 @@ class BrokerClient {
     return receiveCapacity.toString()
   }
 
+  getOrder(id, callback) {
+    const deadline = new Date().setSeconds(new Date().getSeconds() + 5)
+    this.orderService.getBlockOrder({ blockOrderId: id }, { deadline }, callback)
+  }
+
+  watchOrderFillAmounts(id, interval = 5000, fillAmount = 0, emitter = new EventEmitter()) {
+    this.getOrder(id, (err, order) => {
+      if (err) {
+        return emitter.emit('error', err)
+      }
+
+      const newFillAmount = order.fillAmount || '0'
+
+      if(Big(newFillAmount).gt(fillAmount)) {
+        emitter.emit('fill', {
+          amount: Big(newFillAmount).minus(fillAmount).toFixed(8),
+          price: order.limitPrice
+        })
+      }
+
+      if (order.status === 'FAILED') {
+        return emitter.emit('error', new Error(`Order ${id} is in a FAILED state.`))
+      }
+
+      if (order.status === 'COMPLETE') {
+        return emitter.emit('done', order.status)
+      }
+
+      if (order.status === 'CANCELLED') {
+        return emitter.emit('done', order.status)
+      }
+
+      setTimeout(() => {
+        this.watchOrderFillAmounts(id, interval, newFillAmount, emitter)
+      }, interval)
+    })
+
+    return emitter
+  }
+
   async watchOrder(id, interval = 5000) {
     const deadline = new Date().setSeconds(new Date().getSeconds() + 5)
 
@@ -144,4 +185,4 @@ class BrokerClient {
   }
 }
 
-module.exports = BrokerClient
+module.exports = SparkswapClient
