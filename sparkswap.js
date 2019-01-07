@@ -1,10 +1,10 @@
 const EventEmitter = require('events')
+const expandTilde = require('./utils/expand-tilde')
 const basicAuth = require('./basic-auth')
 const grpc = require('grpc')
 const Big = require('big.js')
 const { promisify } = require('util')
 const path = require('path')
-const os = require('os')
 const { readFileSync } = require('fs')
 const PROTO_OPTIONS = {
   convertFieldsToCamelCase: true,
@@ -16,16 +16,6 @@ const PROTO_OPTIONS = {
 const brokerProto = grpc.load(path.resolve(__dirname, path.join('proto', 'broker.proto')), 'proto', PROTO_OPTIONS)
 
 const DEFAULT_RPC_PORT = '27492'
-
-function expandTilde(str) {
-  // https://github.com/nodejs/node/issues/684 is still unresolved so we perform
-  // our own tilde expansion to get the full file path
-  let pathParts = str.split(path.sep)
-  if (pathParts[0] === '~') {
-    pathParts[0] = os.homedir()
-  }
-  return path.join(...pathParts)
-}
 
 class SparkswapClient {
   constructor(configPath = '~/.sparkswap/config.js') {
@@ -114,14 +104,15 @@ class SparkswapClient {
       sendCapacity = Big(baseSymbolCapacities.availableSendCapacity)
     }
 
-    // leave room for routing fees
-    sendCapacity = sendCapacity.times(1 - 0.01)
+    // leave some buffer
+    sendCapacity = sendCapacity.times(1 - 0.05)
+    receiveCapacity = receiveCapacity.times(1 - 0.05)
 
-    if (sendCapacity.gt(receiveCapacity)) {
-      return sendCapacity.toString()
+    if (receiveCapacity.gt(sendCapacity)) {
+      return sendCapacity.toFixed(8)
     }
 
-    return receiveCapacity.toString()
+    return receiveCapacity.toFixed(8)
   }
 
   getOrder(id, callback) {
@@ -185,4 +176,4 @@ class SparkswapClient {
   }
 }
 
-module.exports = SparkswapClient
+module.exports = new SparkswapClient(process.env.npm_package_config_sparkswap_config_path)

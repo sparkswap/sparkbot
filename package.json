@@ -6,9 +6,12 @@
   "config": {
     "sparkswap_version": "v0.3.0-beta",
     "sparkswap_config_path": "~/.sparkswap/config.js",
+    "gdax_config_path": "~/.sparkswap/gdax-config.js",
     "markets": "BTC/LTC",
-    "margin": 0.05,
-    "max_order_size": "0.001",
+    "place_margin": 0.05,
+    "fill_margin": 0.001,
+    "max_order_size": "0.005",
+    "min_order_size": "0.0001",
     "interval": 30
   },
   "scripts": {
